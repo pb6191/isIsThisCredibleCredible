@@ -32,9 +32,8 @@ np.set_printoptions(
 #%%
 
 df1 = pd.read_csv("../data/clean/data_scored.csv")
-df1.drop(columns=["Unnamed: 0", "index"], inplace=True)
 df1.columns
-df1["Score"].isna().sum()
+df1["score"].isna().sum()
 
 #%% create veracity column
 
@@ -47,25 +46,28 @@ df1.groupby("veracity").agg({"mean", "count"}).reset_index()
 #%%
 
 fig, ax = plt.subplots(figsize=(8, 5))
-sns.violinplot(data=df1, x="veracity", y="Score", inner="points", ax=ax)
+sns.violinplot(data=df1, x="veracity", y="score", inner="points", ax=ax)
 ax.set_xlabel("pre-test veracity")
 fig.savefig("../figures/scores-raw_dist.png", facecolor="w", dpi=300)
 
 #%%
 
-df1.query("Score.isna()").groupby("veracity").size()
+df1.query("score.isna()").groupby("veracity").size()
 
 #%% recode false headlines with na scores to 0
 
-df1["score2"] = df1["Score"]
+df1["score2"] = df1["score"]
 df1.describe()
-mask = df1["veracity"] == 0 & df1["Score"].isna()
+mask = df1["veracity"] == 0 & df1["score"].isna()
 df1.loc[mask, "score2"] = 0
 df1.describe()
 
 # %%
 
-cols = ["veracity", "Score", "score2", "Combined", "Dem", "Rep"]
+df1.corr()
+df1.rcorr()
+df1.rcorr().to_csv("../results/corr.csv")
+cols = ["veracity", "score", "score2", "Combined", "Dem", "Rep"]
 df1[cols].corr()
 df1[cols].rcorr()
 ax = sns.pairplot(df1[cols], hue="veracity")

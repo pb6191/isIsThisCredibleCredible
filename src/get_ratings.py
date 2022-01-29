@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import requests
+import urllib.parse
 
 pd.set_option(
     "display.max_rows",
@@ -33,46 +34,56 @@ np.set_printoptions(
 df1 = pd.read_csv("../data/clean/data_cleaned.csv")
 list(df1.columns)
 
+# %%
+
+endpoint = "https://forum.psci.me/article/credible"
 scores = []
 
-# %%
-
-for i in range(df1.shape[0]):
-
+for r in df1.itertuples():
+    print(r)
     time.sleep(np.random.randint(1, 4))
-
-    endpoint = "https://forum.psci.me/article/credible"
-    params = {"url": df1.iloc[i]["Link"]}
-    headers = {
-        # "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:96.0) Gecko/20100101 Firefox/96.0",
-        # "Accept": "application/json, text/plain, */*",
-        # "Accept-Language": "en,en-US;q=0.7,en-GB;q=0.3",
-        "browser_uuid": "is_credible",  # necessary!!
-        # "Sec-Fetch-Dest": "empty",
-        # "Sec-Fetch-Mode": "cors",
-        # "Sec-Fetch-Site": "cross-site",
-        # "Sec-GPC": "1",
-        # "referrer": "https://www.isthiscredible.com/",
-    }
-
+    params = {"url": urllib.parse.quote(r.Link)}
+    headers = {"browser_uuid": "is_credible"}
     resp = requests.get(endpoint, params=params, headers=headers)
-    data = resp.json()
 
-    print(data)
-    try:
-        scores.append(pd.json_normalize(data).score.values[0])
-    except:
-        scores.append("NA")
+    if resp:
+        data = resp.json()
+        data["i"] = r.index
+        data["url"] = r.Link
+        scores.append(pd.json_normalize(data))
+    else:
+        scores.append([])
 
-df1["Score"] = scores
+# %% save scores
 
-sum(df1["Score"] == "NA")
-sum(df1["Score"] != "NA")
+df_scores = pd.concat(scores)
+# replace . in column names with _
+df_scores.columns = [c.replace(".", "_") for c in df_scores.columns]
+df_scores = df_scores.query("score.notna()")
+df_scores.to_csv("../data/clean/scores.csv", index=False)
 
+#%% score data
 
-# %%
+df_scores.columns
 
-df1.to_csv("../data/clean/data_scored.csv")
+cols = [
+    "url",
+    "score",
+    "quality_quality_sources_score",
+    "quality_self_promotion_score",
+    "quality_diversity_sources_score",
+    "quality_quotes_score",
+    "quality_quotes_score",
+    "quality_source_credibility_score",
+    "quality_author_history_score",
+    "quality_opinion_score",
+]
 
+df_scores2 = df_scores[cols]
+df_scored = pd.merge(df1, df_scores2, how="left", left_on="Link", right_on="url")
+
+#%%
+
+df_scored.to_csv("../data/clean/data_scored.csv", index=False)
 
 # %%
