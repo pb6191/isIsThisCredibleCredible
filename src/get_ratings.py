@@ -32,7 +32,7 @@ np.set_printoptions(
 #%%
 
 df1 = pd.read_csv("../data/clean/data_cleaned.csv")
-list(df1.columns)
+df1.columns
 
 # %%
 
