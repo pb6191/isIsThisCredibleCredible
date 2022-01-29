@@ -1,13 +1,8 @@
 # %% load modules
 
-import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import requests
 import seaborn as sns
 
 pd.set_option(
@@ -36,19 +31,22 @@ np.set_printoptions(
 #%%
 
 df1 = pd.read_csv("../data/clean/data_scored.csv")
-list(df1.columns)
+df1.columns
 
 # %%
 
-df2 = df1.dropna()
+df1["veracity"] = 0
+mask = df1["Headline"].str.startswith("t")
+df1.loc[mask, "veracity"] = 1
+
+mask = df1["veracity"] == 0 & df1["Score"].isna()
+df1.loc[mask, "Score"] = 0
 
 # %%
 
-dt = df2[["Dem", "Rep", "Combined", "Score"]].copy()
-
+dt = df1[["Dem", "Rep", "Combined", "Score", "veracity"]].copy()
 dt.corr()
-
-
-sns.pairplot(dt)
+ax = sns.pairplot(dt, hue="veracity")
+ax.savefig("../figures/cor.png", facecolor="w")
 
 # %%
