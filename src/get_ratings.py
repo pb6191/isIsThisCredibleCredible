@@ -1,10 +1,11 @@
 # %% load modules
 
 import time
+
 import numpy as np
 import pandas as pd
-import requests
-import urllib.parse
+
+import utils
 
 pd.set_option(
     "display.max_rows",
@@ -34,22 +35,16 @@ np.set_printoptions(
 df1 = pd.read_csv("../data/clean/data_cleaned.csv")
 df1.columns
 
+
 # %%
 
-endpoint = "https://forum.psci.me/article/credible"
 scores = []
-
 for r in df1.itertuples():
     print(r)
     time.sleep(np.random.randint(1, 4))
-    params = {"url": urllib.parse.quote(r.Link)}
-    headers = {"browser_uuid": "is_credible"}
-    resp = requests.get(endpoint, params=params, headers=headers)
-
+    resp, data = utils.get_score(r.Link)
     if resp:
-        data = resp.json()
         data["i"] = r.index
-        data["url"] = r.Link
         scores.append(pd.json_normalize(data))
     else:
         scores.append([])
