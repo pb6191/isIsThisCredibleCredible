@@ -28,4 +28,8 @@ np.set_printoptions(
     formatter=None,
 )
 
-#%% read domains
+#%%
+
+resp, data = utils.get_score(
+    "https://www.newsmax.com/newsfront/arkansas-governor-asa-hutchinson-cdc/2022/01/31/id/1054853/"
+)
