@@ -34,7 +34,6 @@ np.set_printoptions(
 df1 = pd.read_csv("../data/clean/data_domains_cleaned.csv")
 df1.columns
 
-
 # %%
 
 scores = []
@@ -46,7 +45,7 @@ for r in df1.itertuples():
         data["i"] = r.index
         scores.append(pd.json_normalize(data))
     else:
-        scores.append([])
+        scores.append(pd.DataFrame())
 
 # %% save scores
 
