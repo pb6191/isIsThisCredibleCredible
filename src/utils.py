@@ -1,7 +1,8 @@
 #%%
 
-import requests
 import urllib.parse
+
+import requests
 
 #%%
 
@@ -16,7 +17,7 @@ def get_score(url, proxy=None):
         url = url[:-1]
 
     data = {"url": url, "i": 0}
-    if proxy == None:
+    if proxy is None:
         resp = requests.get(endpoint, params=params, headers=headers)
     else:
         resp = requests.get(endpoint, params=params, headers=headers, proxies=proxy)
