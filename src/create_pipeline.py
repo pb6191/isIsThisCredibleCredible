@@ -2,6 +2,7 @@
 
 import os
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -11,56 +12,15 @@ import requests
 
 import utils
 
-pd.set_option(
-    "display.max_rows",
-    8,
-    "display.max_columns",
-    None,
-    "display.width",
-    None,
-    "display.expand_frame_repr",
-    True,
-    "display.max_colwidth",
-    None,
-)
-
-np.set_printoptions(
-    edgeitems=5,
-    linewidth=233,
-    precision=4,
-    sign=" ",
-    suppress=True,
-    threshold=50,
-    formatter=None,
-)
-
 PATHS = {"outputdir": Path("..") / "data" / "clean" / "credible_scores"}
-
-#%% load stuff
-
-# TODO move all this into main later (below)
-
-df1 = pd.read_csv("../data/clean/data_domains_cleaned.csv")
-df1.columns
-
-file = open("proxy_key.txt")
-for line in file:
-    PROXY_KEY = line.strip()
-
-resp = requests.get(
-    "https://proxy.webshare.io/api/proxy/list/",
-    headers={"Authorization": PROXY_KEY},
-)
-proxies = resp.json()["results"]
+PARAMS = {"pause_s": 0}
 
 #%%
 
 
-def main(url, paths):
+def main(url, paths, pause_s=0):
     tid = threading.get_ident()
     print(f"\n\npid: {os.getpid()} - {url} - thread id {tid}")
-
-    # TODO: save list of urls checked and skip if already checked (in case we have to restart the processes)
 
     # change proxy
     k = np.random.randint(0, len(proxies) - 1)
@@ -78,8 +38,8 @@ def main(url, paths):
     }
     if resp:
         try:
-            dat["score"] = data["score"]
-            dat["story_id"] = data["story_id"]
+            dat["score"] = [data["score"]]
+            dat["story_id"] = [data["story_id"]]
             dat["response"] = [data]
         except:
             pass
@@ -94,15 +54,49 @@ def main(url, paths):
     else:
         df.to_csv(fname, header=False, index=False, mode="a")
 
+    if pause_s > 0:
+        time.sleep(pause_s)
+
     return df
 
 
 #%%
 
 if __name__ == "__main__":
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    #%% load stuff
+
+    df1 = pd.read_csv("../data/clean/data_domains_cleaned.csv")
+    df1 = df1.drop_duplicates()
+
+    file = open("proxy_key.txt")
+    for line in file:
+        PROXY_KEY = line.strip()
+
+    resp = requests.get(
+        "https://proxy.webshare.io/api/proxy/list/",
+        headers={"Authorization": PROXY_KEY},
+    )
+    proxies = resp.json()["results"]
+
+    #%% remove already-checked urls
+
+    to_checked = set(df1["Link"])
+    if list(PATHS["outputdir"].glob("*.csv")):  # if yes csv files
+        checked = set(
+            pd.concat(
+                [
+                    pd.read_csv(f, usecols=["url"], dtype={"url": "string"})
+                    for f in PATHS["outputdir"].glob("*.csv")
+                ]
+            )["url"]
+        )
+        to_checked = to_checked.difference(checked)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        print(f"urls to check: {len(to_checked)}")
         futures = {
-            executor.submit(main, r.Link, PATHS): r.Link for r in df1.itertuples()
+            executor.submit(main, url, PATHS, PARAMS["pause_s"]): url
+            for url in to_checked
         }
         for f in as_completed(futures):
             url = futures[f]
