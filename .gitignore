@@ -1,3 +1,5 @@
 venv/
 .vscode
 src/proxy_key.txt
+
+creds.py

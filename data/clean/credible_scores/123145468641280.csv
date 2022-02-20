@@ -1,0 +1,2 @@
+url,domain,bias,cred,score,quality,story_id,response
+https://www.foxnews.com/sports/rob-gronkowski-decision-career-looms-tom-brady,foxnews.com,RIGHT,MIXED,,"""Story is too short to be rated (< 250 words).""",,"{'site_meta': {'name': 'Fox News', 'cred': 'MIXED', 'bias': 'RIGHT'}, 'quality': {'error': '""Story is too short to be rated (< 250 words).""'}, 'read_time': 0, 'authors': [], 'authors_data': [], 'url': 'https://www.foxnews.com/sports/rob-gronkowski-decision-career-looms-tom-brady'}"
