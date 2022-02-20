@@ -35,7 +35,7 @@ def main(url, paths, pause_s=0):
 
     # get score
     url = url.lower().strip()
-    resp, data = utils.get_score(url, proxy_dict)  # output data is dictionary
+    resp, data = utils.get_credible_score(url, proxy_dict)  # output data is dictionary
     domain = urlexpander.get_domain(url)
     if resp:
         dat = {

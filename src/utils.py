@@ -7,7 +7,7 @@ import requests
 #%%
 
 
-def get_score(url, proxy=None):
+def get_credible_score(url, proxy=None):
     endpoint = "https://forum.psci.me/article/credible"
     params = {"url": urllib.parse.quote(url)}
     headers = {"browser_uuid": "is_credible"}
