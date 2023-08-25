@@ -30,15 +30,18 @@ np.set_printoptions(
 
 #%%
 
+# read scoring data
 df1 = pd.read_csv("../data/clean/domains_scores.csv")
 df1.columns
 df1["score"].isna().sum()
 
-#%% create veracity column
+#%% aggregate data for observation
 
 df1.groupby("binary_quality").agg({"mean", "count"}).reset_index()
 
 #%%
+
+# create a violin plot of the distribution
 
 fig, ax = plt.subplots(figsize=(8, 5))
 sns.violinplot(data=df1, x="binary_quality", y="score", inner="points", ax=ax)
@@ -51,6 +54,8 @@ df1.query("score.isna()").groupby("binary_quality").size()
 
 # %%
 
+# 
+
 df1.corr()
 df1.rcorr()
 df1.rcorr().to_csv("../results/domains_corr.csv")
@@ -61,6 +66,8 @@ ax = sns.pairplot(df1[cols], hue="binary_quality")
 ax.savefig("../figures/domains_cor.png", facecolor="w", dpi=300)
 
 # %%
+
+# create a domain-wise plot
 
 df1["mean_domain_score"] = df1["score"].groupby(df1["domain"]).transform("mean")
 
